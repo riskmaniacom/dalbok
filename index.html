@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PawCare">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#C4714A">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PawCare — 반려견 투병 관리</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23C4714A'/><text y='.9em' font-size='72' x='10'>🐾</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{
+  --c:#F8F6F3;--w:#FEFEFE;--sand:#EDE8E2;
+  --t:#C4714A;--tl:#E89B78;--td:#9A4E2E;
+  --sage:#6B9E7A;--sgl:#A4C4AE;
+  --navy:#2A3A4A;--txt:#222018;--ts:#5E5448;--tm:#9A8E84;
+  --bd:#DDD6CC;--sh:rgba(80,50,20,.08);
+  --red:#D05050;--rl:#F5E0E0;--yel:#C8982A;--yl:#F5EDD0;
+  --grn:#4E9060;--gl:#DCF0E2;--pur:#7A60B0;--pl:#EDE8F8;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--c)}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--txt);display:flex;flex-direction:column}
+
+/* LOCK */
+#LS{position:fixed;inset:0;background:linear-gradient(160deg,#1E1008 0%,#2E1A0C 50%,#0E1E14 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:32px 28px 40px;padding-top:calc(32px + var(--safe-top))}
+.l-logo{font-size:58px;margin-bottom:8px}
+.l-title{font-family:'DM Serif Display',serif;font-size:26px;color:#F0D8C0;margin-bottom:4px}
+.l-sub{font-size:12px;color:rgba(240,216,192,.45);margin-bottom:38px;text-align:center;line-height:1.7}
+.l-dots{display:flex;gap:14px;margin-bottom:26px}
+.l-dot{width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);transition:all .18s}
+.l-dot.on{background:#E89B78;border-color:#E89B78;box-shadow:0 0 10px rgba(232,155,120,.55)}
+.l-dot.err{background:#D05050;border-color:#D05050;animation:lshk .35s ease}
+@keyframes lshk{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.l-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;width:100%;max-width:272px}
+.l-key{height:66px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);color:#F0D8C0;font-size:22px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:background .12s,transform .1s;backdrop-filter:blur(4px)}
+.l-key:active{background:rgba(232,155,120,.28);transform:scale(.93)}
+.l-key .ls{font-size:9px;letter-spacing:.1em;opacity:.45;text-transform:uppercase}
+.l-key.lx{border:none;background:none;cursor:default}
+.l-msg{font-size:13px;color:rgba(232,155,120,.75);margin-top:18px;min-height:20px;text-align:center}
+#LS.fadeout{animation:lfo .4s ease forwards}
+@keyframes lfo{to{opacity:0;transform:scale(1.05)}}
+
+/* INSTALL GUIDE */
+#IG{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;z-index:9998;backdrop-filter:blur(8px)}
+#IG.show{display:flex}
+.ig-sheet{background:#1C1C1E;border-radius:20px 20px 0 0;padding:24px 20px;padding-bottom:calc(24px + var(--safe-bot));width:100%;color:#fff;animation:slideUp .28s ease}
+.ig-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.ig-num{width:26px;height:26px;border-radius:50%;background:var(--t);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.ig-txt{font-size:14px;line-height:1.6;color:rgba(255,255,255,.82)}
+.ig-txt strong{color:#E89B78}
+
+/* HEADER */
+.hdr{background:var(--w);border-bottom:1px solid var(--bd);padding:0 15px;padding-top:var(--safe-top);display:flex;align-items:center;justify-content:space-between;height:calc(52px + var(--safe-top));flex-shrink:0;box-shadow:0 1px 6px var(--sh)}
+.logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--td);display:flex;align-items:center;gap:6px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.pet-btn{display:flex;align-items:center;gap:6px;background:var(--sand);border:none;border-radius:20px;padding:5px 11px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--txt)}
+.pet-ava{width:22px;height:22px;border-radius:50%;background:var(--tl);display:flex;align-items:center;justify-content:center;font-size:11px}
+.hdr-badge{background:var(--rl);color:var(--red);border-radius:10px;font-size:10px;font-weight:700;padding:2px 7px;display:none}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 13px;padding-bottom:calc(70px + var(--safe-bot));-webkit-overflow-scrolling:touch}
+
+/* TABBAR */
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:var(--w);border-top:1px solid var(--bd);display:flex;z-index:300;box-shadow:0 -1px 10px var(--sh);padding-bottom:var(--safe-bot)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;padding:8px 2px;height:58px;transition:all .15s}
+.t-ic{font-size:21px;line-height:1;position:relative}
+.t-lb{font-size:9px;color:var(--tm);font-weight:400;margin-top:1px}
+.tab.active .t-lb{color:var(--td);font-weight:700}
+.t-badge{position:absolute;top:-4px;right:-8px;background:var(--red);color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:1px 5px;display:none}
+.t-badge.show{display:block}
+.more-panel{position:fixed;bottom:calc(58px + var(--safe-bot));left:0;right:0;background:var(--w);border-top:1px solid var(--bd);padding:14px 13px;display:none;z-index:299;box-shadow:0 -3px 18px var(--sh)}
+.more-panel.open{display:block}
+.more-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.more-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;background:var(--sand);border-radius:12px;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+.more-btn:active{opacity:.75;transform:scale(.95)}
+.more-btn .mi{font-size:20px}.more-btn .ml{font-size:10px;color:var(--ts);font-weight:500}
+.more-btn.am{background:var(--t)}.more-btn.am .ml{color:#fff}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+.pg-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.pg-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--td)}
+.pg-sub{font-size:11px;color:var(--tm);margin-top:1px}
+
+/* CARDS */
+.card{background:var(--w);border:1px solid var(--bd);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 1px 6px var(--sh)}
+.ct{font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+
+/* ALERTS */
+.alert{border-radius:12px;padding:12px 13px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5}
+.al-r{background:var(--rl);border:1px solid #EEB0B0;color:#8A2020}
+.al-y{background:var(--yl);border:1px solid #E0C870;color:#7A5010}
+.al-p{background:var(--pl);border:1px solid #C0AAEA;color:#4A2A90}
+.al-g{background:var(--gl);border:1px solid #90D0A0;color:#1A5A28}
+
+/* STATS */
+.stat-g{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.stat{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;text-align:center;box-shadow:0 1px 5px var(--sh)}
+.si{font-size:22px;margin-bottom:4px}
+.sv{font-family:'DM Serif Display',serif;font-size:28px;color:var(--td);line-height:1}
+.sl{font-size:10px;color:var(--tm);margin-top:2px}
+
+/* PHASE BAR */
+.phase{display:flex;border-radius:11px;overflow:hidden;border:1px solid var(--bd);margin-bottom:12px}
+.ph{flex:1;padding:8px 3px;text-align:center;font-size:10px;font-weight:500;border-right:1px solid var(--bd)}
+.ph:last-child{border-right:none}
+.ph.done{background:#E8F4EC;color:#2A7040}
+.ph.now{background:var(--t);color:#fff}
+.ph.pend{background:var(--sand);color:var(--tm)}
+.ph-d{font-size:9px;opacity:.8;margin-top:1px}
+
+/* FORMS */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+.fg label{font-size:12px;font-weight:600;color:var(--ts)}
+.fg input,.fg select,.fg textarea{border:1.5px solid var(--bd);border-radius:10px;padding:12px 13px;font-size:15px;font-family:'Noto Sans KR',sans-serif;background:var(--c);color:var(--txt);outline:none;width:100%;-webkit-appearance:none;transition:border-color .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--tl);background:var(--w)}
+.fg textarea{resize:none;min-height:80px;line-height:1.6}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* BUTTONS */
+.btn{border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;padding:12px 18px;transition:all .15s}
+.btn:active{transform:scale(.96);opacity:.88}
+.btn-p{background:var(--t);color:#fff}
+.btn-s{background:transparent;color:var(--ts);border:1.5px solid var(--bd)}
+.btn-r{background:var(--red);color:#fff}
+.btn-g{background:var(--grn);color:#fff}
+.btn-pur{background:var(--pur);color:#fff}
+.btn-w{width:100%}
+.btn-sm{font-size:12px;padding:8px 14px;font-weight:500}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.bt{background:#F5E0D5;color:var(--td)}.bs{background:var(--gl);color:#2A6040}
+.br{background:var(--rl);color:#8A2020}.bg{background:var(--sand);color:var(--ts)}
+.bp{background:var(--pl);color:var(--pur)}.by{background:var(--yl);color:#7A5010}
+
+/* LOG ITEMS */
+.log-item{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;display:flex;gap:11px;margin-bottom:9px;box-shadow:0 1px 5px var(--sh)}
+.ld{text-align:center;min-width:40px;background:var(--sand);border-radius:8px;padding:6px 7px;flex-shrink:0}
+.lm{font-size:10px;text-transform:uppercase;color:var(--tm)}
+.lday{font-family:'DM Serif Display',serif;font-size:20px;color:var(--td);line-height:1}
+.lb{flex:1;min-width:0}
+.lt{font-size:13px;font-weight:600;margin-bottom:2px}
+.ldesc{font-size:12px;color:var(--ts);line-height:1.55}
+.ltags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+
+/* MED CARDS */
+.mc{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:9px;position:relative;overflow:hidden;box-shadow:0 1px 5px var(--sh)}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.mc-s::before{background:linear-gradient(90deg,var(--t),var(--tl))}
+.mc-c::before{background:linear-gradient(90deg,var(--pur),#4070B0)}
+.mc-o::before{background:var(--sage)}
+.mc-x::before{background:var(--bd)}
+.mn{font-size:14px;font-weight:700;margin-bottom:2px}
+.md{font-size:12px;color:var(--tm);margin-bottom:8px}
+.mse{font-size:12px;background:var(--sand);border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.5}
+.mse strong{color:var(--red);font-size:11px;display:block;margin-bottom:2px}
+
+/* SEV BTNS */
+.sev-row{display:flex;gap:6px;margin-bottom:12px}
+.sb{flex:1;border:1.5px solid var(--bd);border-radius:9px;padding:9px 3px;text-align:center;font-size:12px;cursor:pointer;background:var(--w);font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+.sb:active{transform:scale(.94)}
+.sb.on.s1,.sb.on.s2{background:var(--gl);border-color:#90C0A0;color:#1A6030;font-weight:700}
+.sb.on.s3{background:var(--yl);border-color:#E0C070;color:#7A4A00;font-weight:700}
+.sb.on.s4{background:#FFE8D0;border-color:#E0A070;color:#8A3A00;font-weight:700}
+.sb.on.s5{background:var(--rl);border-color:#E09090;color:#8A1010;font-weight:700}
+
+/* NEURO GRID */
+.nsym-g{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.nsym{border:1.5px solid var(--bd);border-radius:10px;padding:10px 10px;display:flex;align-items:center;gap:7px;font-size:13px;background:var(--w);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:left;width:100%;transition:all .15s}
+.nsym:active{transform:scale(.96)}
+.nsym.on{background:var(--rl);border-color:#EEB0B0;color:#8A2020}
+.nw{margin-left:auto;font-size:11px;color:var(--red);font-weight:700;flex-shrink:0}
+
+/* TESTS TABLE */
+.ttbl{width:100%;border-collapse:collapse;font-size:13px}
+.ttbl th{text-align:left;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--tm);border-bottom:1px solid var(--bd);font-weight:700}
+.ttbl td{padding:10px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}
+.ttbl tr:last-child td{border-bottom:none}
+.ok{color:var(--grn);font-weight:700}.hi{color:var(--red);font-weight:700}.lo{color:var(--yel);font-weight:700}
+
+/* COMPARE */
+.cmp-c{background:var(--w);border:2px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:11px;box-shadow:0 1px 5px var(--sh)}
+.cmp-c.p1{border-color:#A4C4AE}.cmp-c.p2{border-color:#E89B78}
+.cmp-l{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:9px}
+.cmp-c.p1 .cmp-l{color:var(--sage)}.cmp-c.p2 .cmp-l{color:var(--t)}
+.cr{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.cr:last-child{border-bottom:none}
+.ck{color:var(--tm);width:65px;flex-shrink:0;font-size:12px}
+
+/* VISIT */
+.vc{background:var(--w);border:1px solid var(--bd);border-radius:13px;padding:13px;margin-bottom:9px;box-shadow:0 1px 5px var(--sh)}
+.vt{font-size:14px;font-weight:700}
+.vd{font-size:12px;color:var(--tm);margin-bottom:6px}
+.vbody{font-size:13px;color:var(--ts);line-height:1.65}
+
+/* AI */
+.ai-wrap{background:linear-gradient(135deg,#FDF5EF,#F0F4F8);border:1px solid var(--bd);border-radius:15px;overflow:hidden;margin-bottom:12px}
+.ai-hdr{background:linear-gradient(100deg,var(--td),var(--pur));padding:15px 16px;color:#fff}
+.ai-ht{font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:1px}
+.ai-hs{font-size:11px;opacity:.75}
+.ai-body{padding:14px}
+.qbtns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.qb{background:var(--w);border:1px solid var(--bd);border-radius:16px;padding:6px 11px;font-size:12px;color:var(--ts);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+.qb:active{background:var(--sand)}
+.ai-row{display:flex;gap:7px;margin-bottom:12px}
+.ai-inp{flex:1;border:1.5px solid var(--bd);border-radius:10px;padding:11px 13px;font-size:14px;font-family:'Noto Sans KR',sans-serif;background:var(--w);color:var(--txt);outline:none}
+.ai-inp:focus{border-color:var(--tl)}
+.ai-send{background:var(--t);color:#fff;border:none;border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif}
+.ai-send:disabled{opacity:.5}
+.ai-msgs{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;padding-bottom:4px}
+.msg{display:flex;gap:7px;align-items:flex-start;animation:fi .25s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.mav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
+.mav.user{background:var(--sand)}.mav.ai{background:linear-gradient(135deg,var(--tl),var(--sgl))}
+.mb{max-width:88%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.7}
+.msg.user .mb{background:var(--t);color:#fff;border-bottom-right-radius:3px;margin-left:auto}
+.msg.user{flex-direction:row-reverse}
+.msg.ai .mb{background:var(--w);border:1px solid var(--bd);color:var(--txt);border-bottom-left-radius:3px}
+.typing{display:flex;gap:4px;align-items:center;padding:3px 0}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--tm);animation:bn 1.2s infinite ease-in-out}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bn{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* SCAN */
+.scan-g{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.scan-gi{background:var(--w);border:1px solid var(--bd);border-radius:11px;padding:10px 5px;text-align:center;box-shadow:0 1px 4px var(--sh)}
+.scan-upload{background:var(--w);border:2px dashed var(--bd);border-radius:15px;padding:22px 14px;text-align:center;margin-bottom:12px}
+.scan-preview img{width:100%;border-radius:10px;max-height:260px;object-fit:contain;background:#f0f0f0;display:block}
+.parsed-item{background:var(--c);border:1.5px solid var(--bd);border-radius:11px;padding:11px 13px;margin-bottom:7px;display:flex;gap:9px;align-items:flex-start;transition:all .15s}
+.parsed-item.on{background:#F0F8F3;border-color:#90C8A0}
+.pchk{width:22px;height:22px;border-radius:7px;border:2px solid var(--bd);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px;background:var(--w);transition:all .15s}
+.pchk.on{background:var(--sage);border-color:var(--sage);color:#fff}
+.pt{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.pt.pm{color:var(--pur)}.pt.pk{color:var(--t)}.pt.pv{color:var(--sage)}
+.pn-t{font-size:14px;font-weight:600;margin-bottom:2px}
+.pd{font-size:12px;color:var(--tm);line-height:1.5}
+.scan-hist{background:var(--w);border:1px solid var(--bd);border-radius:11px;padding:11px 13px;margin-bottom:8px;display:flex;gap:10px;align-items:center;box-shadow:0 1px 4px var(--sh)}
+.sh-ic{width:42px;height:42px;border-radius:8px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+
+/* SETTINGS */
+.set-sec{margin-bottom:18px}
+.set-ttl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);margin-bottom:8px;padding:0 2px}
+.set-row{background:var(--w);border:1px solid var(--bd);border-radius:12px;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;box-shadow:0 1px 4px var(--sh)}
+.sr-lb{font-size:14px;font-weight:500}
+.sr-sub{font-size:11px;color:var(--tm);margin-top:1px}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(20,10,5,.5);display:none;align-items:flex-end;z-index:500;backdrop-filter:blur(6px)}
+.mo.open{display:flex}
+.modal{background:var(--w);border-radius:20px 20px 0 0;padding:20px 16px;padding-bottom:calc(20px + var(--safe-bot));width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+.mhandle{width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px}
+.mtitle{font-family:'DM Serif Display',serif;font-size:19px;color:var(--td);margin-bottom:14px}
+.mfoot{display:flex;gap:9px;margin-top:16px}
+.mfoot .btn-s{flex:1}.mfoot .btn-p{flex:2}
+
+/* KEY BOX */
+.keybox{background:#FFF8E7;border:1px solid #F0D080;border-radius:11px;padding:12px 13px;display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;font-size:13px}
+.krow{display:flex;gap:7px;align-items:center;margin-top:8px}
+.kinp{flex:1;font-family:monospace;font-size:12px;border:1px solid #E0C860;border-radius:7px;padding:8px 10px;background:var(--w)}
+.btn-k{background:#C8982A;color:#fff;border:none;padding:8px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap}
+
+/* TIMELINE */
+.tli{display:flex;gap:9px;align-items:flex-start;margin-bottom:7px}
+.tld{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.tlt{font-size:13px;font-weight:500}
+.tlm{font-size:11px;color:var(--tm)}
+
+/* BAR CHART */
+.bar-r{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.bar-l{font-size:11px;color:var(--ts);width:48px;text-align:right;flex-shrink:0}
+.bar-w{flex:1;background:var(--sand);border-radius:4px;height:10px;overflow:hidden}
+.bar-f{height:100%;border-radius:4px}
+.bar-v{font-size:11px;font-weight:600;width:18px}
+
+/* DEL / UTIL BTNS */
+.xbtn{background:none;border:none;cursor:pointer;color:var(--tm);font-size:18px;padding:2px 5px;line-height:1;flex-shrink:0;transition:color .15s}
+.xbtn:active{color:var(--red)}
+.divider{border:none;border-top:1px solid var(--bd);margin:14px 0}
+
+/* CRISIS */
+.crisis{background:var(--rl);border:2px solid #EEB0B0;border-radius:13px;padding:13px;margin-bottom:12px}
+.crisis h3{font-weight:700;color:#8A1010;font-size:13px;margin-bottom:9px}
+.crisis-g{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.crisis-i{background:#fff;border:1px solid #EEB0B0;border-radius:8px;padding:8px 9px;font-size:12px;color:#6A1010;display:flex;align-items:center;gap:6px}
+
+/* EMPTY */
+.empty{text-align:center;padding:24px 14px;color:var(--tm);font-size:13px}
+.empty-ic{font-size:32px;display:block;margin-bottom:7px;opacity:.5}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:999;opacity:0;transition:all .3s ease;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+</style>
+</head>
+<body>
+<!-- LOCK -->
+<div id="LS">
+  <div class="l-logo">🐾</div>
+  <div class="l-title">PawCare</div>
+  <div class="l-sub">자가면역 뇌척수염 관리 앱<br>등록된 기기에서만 사용 가능합니다</div>
+  <div class="l-dots">
+    <div class="l-dot" id="ld0"></div><div class="l-dot" id="ld1"></div>
+    <div class="l-dot" id="ld2"></div><div class="l-dot" id="ld3"></div>
+    <div class="l-dot" id="ld4"></div><div class="l-dot" id="ld5"></div>
+  </div>
+  <div class="l-pad" id="lpad">
+    <button class="l-key" data-k="1">1</button>
+    <button class="l-key" data-k="2">2<span class="ls">ABC</span></button>
+    <button class="l-key" data-k="3">3<span class="ls">DEF</span></button>
+    <button class="l-key" data-k="4">4<span class="ls">GHI</span></button>
+    <button class="l-key" data-k="5">5<span class="ls">JKL</span></button>
+    <button class="l-key" data-k="6">6<span class="ls">MNO</span></button>
+    <button class="l-key" data-k="7">7<span class="ls">PQRS</span></button>
+    <button class="l-key" data-k="8">8<span class="ls">TUV</span></button>
+    <button class="l-key" data-k="9">9<span class="ls">WXYZ</span></button>
+    <button class="l-key lx" data-k=""></button>
+    <button class="l-key" data-k="0">0</button>
+    <button class="l-key" data-k="del">⌫</button>
+  </div>
+  <div class="l-msg" id="lmsg">설치 코드를 입력하세요</div>
+</div>
+
+<!-- INSTALL GUIDE -->
+<div id="IG">
+  <div class="ig-sheet">
+    <div style="font-size:16px;font-weight:700;margin-bottom:18px;text-align:center">📲 홈 화면에 앱 추가하기</div>
+    <div class="ig-step"><div class="ig-num">1</div><div class="ig-txt">Safari 하단 <strong>공유 버튼 ↑</strong> 탭</div></div>
+    <div class="ig-step"><div class="ig-num">2</div><div class="ig-txt">스크롤해서 <strong>"홈 화면에 추가"</strong> 탭</div></div>
+    <div class="ig-step"><div class="ig-num">3</div><div class="ig-txt"><strong>"추가"</strong> 버튼 탭 → 홈 화면에 🐾 아이콘 생성</div></div>
+    <div class="ig-step" style="margin-bottom:0"><div class="ig-num">4</div><div class="ig-txt">다음부터 홈 화면 아이콘으로 바로 실행!</div></div>
+    <button id="btnIG" style="width:100%;margin-top:18px;padding:14px;background:var(--t);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif">확인</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">🐾 PawCare</div>
+  <div class="hdr-right">
+    <span class="hdr-badge" id="hdrBadge">⚠ 위험</span>
+    <button class="pet-btn" id="btnPet">
+      <div class="pet-ava">🐕</div>
+      <span id="hdrName">프로필</span> ▾
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainArea">
+
+<!-- 홈 -->
+<div class="page active" id="pg-home">
+  <div class="pg-hdr">
+    <div><div class="pg-title" id="hTitle">투병 일지</div><div class="pg-sub" id="hSub">자가면역성 뇌척수염 · 재발 치료 중</div></div>
+  </div>
+  <div id="hCrisis"></div>
+  <div class="phase">
+    <div class="ph done"><div>1차 발병</div><div class="ph-d" id="ph1">2022</div></div>
+    <div class="ph done"><div>호전</div><div class="ph-d">관해</div></div>
+    <div class="ph now"><div>🔴 재발</div><div class="ph-d" id="ph2">현재</div></div>
+    <div class="ph pend"><div>재관해</div><div class="ph-d">목표</div></div>
+  </div>
+  <div class="stat-g">
+    <div class="stat"><div class="si">💊</div><div class="sv" id="sM">0</div><div class="sl">복용 중인 약</div></div>
+    <div class="stat"><div class="si">🧠</div><div class="sv" id="sN">0</div><div class="sl">오늘 신경 증상</div></div>
+    <div class="stat"><div class="si">🔬</div><div class="sv" id="sT">0</div><div class="sl">검사 기록</div></div>
+    <div class="stat"><div class="si">🏥</div><div class="sv" id="sV">0</div><div class="sl">병원 방문</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">오늘 투약 현황 <span id="medTodayBadge" style="font-size:11px;color:var(--t)"></span></div>
+    <div id="hMeds"><div class="empty"><span class="empty-ic">💊</span>약을 등록해주세요</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">최근 컨디션 추이</div>
+    <div id="hCond"><div class="empty"><span class="empty-ic">📊</span>기록 없음</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">최근 활동</div>
+    <div id="hAct"><div class="empty"><span class="empty-ic">📋</span>기록이 없습니다</div></div>
+  </div>
+</div>
+
+<!-- 신경 증상 -->
+<div class="page" id="pg-neuro">
+  <div class="pg-hdr">
+    <div><div class="pg-title">신경 증상</div><div class="pg-sub">자가면역성 뇌척수염 일일 체크</div></div>
+    <button class="btn btn-p btn-sm" id="btnAddNeuro">+ 기록</button>
+  </div>
+  <div class="crisis">
+    <h3>🚨 즉시 병원 방문</h3>
+    <div class="crisis-g">
+      <div class="crisis-i">⚡ 발작/경련</div>
+      <div class="crisis-i">🦿 갑작스런 마비</div>
+      <div class="crisis-i">👁️ 실명·눈떨림 악화</div>
+      <div class="crisis-i">🌡️ 고열+의식혼탁</div>
+      <div class="crisis-i">😮‍💨 호흡·연하 장애</div>
+      <div class="crisis-i">📉 수시간 내 급격 악화</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:7px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px">
+    <button class="btn btn-p btn-sm" data-nf="all">전체</button>
+    <button class="btn btn-s btn-sm" data-nf="7">최근 7일</button>
+    <button class="btn btn-s btn-sm" data-nf="30">최근 30일</button>
+    <button class="btn btn-s btn-sm" data-nf="hi">심각도 3+</button>
+  </div>
+  <div id="neuroList"><div class="empty"><span class="empty-ic">🧠</span>기록된 신경 증상이 없습니다</div></div>
+</div>
+
+<!-- 투약 -->
+<div class="page" id="pg-med">
+  <div class="pg-hdr">
+    <div><div class="pg-title">투약 관리</div><div class="pg-sub">항암제·스테로이드 모니터링</div></div>
+    <button class="btn btn-p btn-sm" id="btnAddMed">+ 약 추가</button>
+  </div>
+  <div class="alert al-y">
+    <span style="font-size:18px;flex-shrink:0">⚠️</span>
+    <div><strong>스테로이드 주의:</strong> 면역억제→감염 위험↑, 혈당 상승, 절대 갑자기 중단 금지</div>
+  </div>
+  <div class="card" id="todayCheckCard">
+    <div class="ct">오늘 복용 체크 <span id="todayPct" style="color:var(--t)"></span></div>
+    <div id="todayCheckList"></div>
+  </div>
+  <div class="ct" style="margin-bottom:8px;padding:0 2px">등록된 약물</div>
+  <div id="medList"><div class="empty"><span class="empty-ic">💊</span>약을 추가해주세요</div></div>
+  <div class="divider"></div>
+  <div class="ct" style="margin-bottom:8px;padding:0 2px">오늘 복용 기록</div>
+  <div id="medLog"><div style="font-size:13px;color:var(--tm);padding:4px 0">오늘 기록 없음</div></div>
+</div>
+
+<!-- 검사 결과 -->
+<div class="page" id="pg-test">
+  <div class="pg-hdr">
+    <div><div class="pg-title">검사 결과</div><div class="pg-sub">CRP · WBC · MRI 등 추적</div></div>
+    <button class="btn btn-p btn-sm" id="btnAddTest">+ 추가</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+    <div class="card" style="padding:11px;text-align:center;margin-bottom:0">
+      <div style="font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;margin-bottom:4px">CRP</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--td)" id="mCRP">—</div>
+      <div style="font-size:10px;color:var(--tm)">정상 &lt;1.0</div>
+    </div>
+    <div class="card" style="padding:11px;text-align:center;margin-bottom:0">
+      <div style="font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;margin-bottom:4px">WBC</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--td)" id="mWBC">—</div>
+      <div style="font-size:10px;color:var(--tm)">저하 주의</div>
+    </div>
+    <div class="card" style="padding:11px;text-align:center;margin-bottom:0">
+      <div style="font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;margin-bottom:4px">MRI/CT</div>
+      <div style="font-size:12px;font-weight:600;color:var(--td);white-space:pre-line;margin-top:3px" id="mImg">—</div>
+    </div>
+  </div>
+  <div class="card" id="crpChartCard" style="display:none">
+    <div class="ct">CRP 추이</div>
+    <div id="crpChart"></div>
+  </div>
+  <div class="card" style="overflow:hidden;padding:0;margin-bottom:12px">
+    <table class="ttbl">
+      <thead><tr><th>날짜</th><th>항목</th><th>결과</th><th>상태</th><th></th></tr></thead>
+      <tbody id="testBody"><tr><td colspan="5" class="empty" style="text-align:center">검사 결과 없음</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 병원 기록 -->
+<div class="page" id="pg-hosp">
+  <div class="pg-hdr">
+    <div><div class="pg-title">병원 기록</div><div class="pg-sub">진찰 · 처방 · 비용 기록</div></div>
+    <button class="btn btn-p btn-sm" id="btnAddVisit">+ 추가</button>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;gap:0;text-align:center">
+      <div style="flex:1"><div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--td)" id="vTotal">0</div><div style="font-size:11px;color:var(--tm)">총 방문</div></div>
+      <div style="flex:1;border-left:1px solid var(--bd)"><div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--td)" id="vThisMonth">0</div><div style="font-size:11px;color:var(--tm)">이번 달</div></div>
+      <div style="flex:1;border-left:1px solid var(--bd)"><div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--td)" id="vTotalCost">0</div><div style="font-size:11px;color:var(--tm)">누적(만원)</div></div>
+    </div>
+  </div>
+  <div id="visitList"><div class="empty"><span class="empty-ic">🏥</span>방문 기록 없음</div></div>
+</div>
+
+<!-- 경과 비교 -->
+<div class="page" id="pg-cmp">
+  <div class="pg-title" style="margin-bottom:2px">1차↔재발 비교</div>
+  <div class="pg-sub" style="margin-bottom:14px">두 시기 증상·치료를 비교합니다</div>
+  <div class="alert al-p"><span style="font-size:18px;flex-shrink:0">📋</span><div>1차 발병 기록을 입력하면 현재와 나란히 비교할 수 있습니다. 수의사 상담 시 함께 보여주세요.</div></div>
+  <div class="cmp-c p1">
+    <div class="cmp-l">🟢 1차 발병 (2022년)</div>
+    <div id="cmp1"><div style="font-size:13px;color:var(--tm)">아래 버튼을 눌러 입력하세요</div></div>
+    <button class="btn btn-s btn-w btn-sm" id="btnP1" style="margin-top:11px">✏️ 1차 발병 기록 입력/수정</button>
+  </div>
+  <div class="cmp-c p2" style="margin-top:0">
+    <div class="cmp-l">🔴 재발 (현재)</div>
+    <div id="cmp2"><div style="font-size:13px;color:var(--tm)">신경 증상·검사 결과를 기록하면 자동 표시됩니다</div></div>
+  </div>
+  <div class="card">
+    <div class="ct">AI 경과 비교 분석</div>
+    <div style="font-size:12px;color:var(--ts);margin-bottom:10px">두 시기 기록을 AI가 비교 분석합니다</div>
+    <button class="btn btn-pur btn-w" id="btnCmpAI">✨ 비교 분석 요청</button>
+    <div id="cmpResult" style="margin-top:12px;font-size:13px;line-height:1.8;color:var(--ts)"></div>
+  </div>
+</div>
+
+<!-- AI 분석 -->
+<div class="page" id="pg-ai">
+  <div class="pg-title" style="margin-bottom:2px">AI 분석</div>
+  <div class="pg-sub" style="margin-bottom:14px">자가면역 뇌척수염 특화 분석</div>
+  <div class="keybox" id="keyNotice">
+    <span style="font-size:20px;flex-shrink:0">🔑</span>
+    <div style="flex:1">
+      <div style="font-weight:600;margin-bottom:2px">Anthropic API Key</div>
+      <div style="color:var(--ts);font-size:12px">이 기기에만 저장됩니다</div>
+      <div class="krow"><input type="password" class="kinp" id="apiKeyInp" placeholder="sk-ant-..."><button class="btn-k" id="btnSaveKey">저장</button></div>
+    </div>
+  </div>
+  <div class="ai-wrap">
+    <div class="ai-hdr"><div class="ai-ht">🧠 AI 어시스턴트</div><div class="ai-hs">기록된 건강 데이터 기반 분석</div></div>
+    <div class="ai-body">
+      <div class="qbtns" id="qbtns">
+        <button class="qb" data-q="오늘 기록된 신경 증상을 분석해주세요">🧠 신경 증상</button>
+        <button class="qb" data-q="스테로이드와 항암제 부작용과 지금 주의할 점을 알려주세요">💊 약 부작용</button>
+        <button class="qb" data-q="최근 CRP와 WBC 변화를 분석해주세요">🔬 염증 수치</button>
+        <button class="qb" data-q="1차 발병과 현재 재발의 차이점을 분석해주세요">📊 경과 비교</button>
+        <button class="qb" data-q="다음 병원 방문 전 수의사에게 물어볼 질문 목록을 만들어주세요">🏥 병원 준비</button>
+        <button class="qb" data-q="지금 가장 주의해야 할 위험 신호가 있나요?">⚠️ 위험 신호</button>
+        <button class="qb" data-q="현재 투약 중인 약들 사이의 상호작용이나 주의사항을 알려주세요">💬 약물 상호작용</button>
+        <button class="qb" data-q="전반적인 건강 상태 요약과 보호자가 할 수 있는 것들을 알려주세요">📋 건강 요약</button>
+      </div>
+      <div class="ai-row">
+        <input class="ai-inp" id="aiInp" placeholder="궁금한 점을 입력하세요...">
+        <button class="ai-send" id="aiSend">전송</button>
+      </div>
+      <div class="ai-msgs" id="aiMsgs">
+        <div class="msg ai">
+          <div class="mav ai">🧠</div>
+          <div class="mb">안녕하세요! 자가면역성 뇌척수염 AI 어시스턴트입니다.<br>기록된 데이터를 바탕으로 분석해드립니다.<br><em style="font-size:11px;opacity:.65">⚠️ 최종 판단은 담당 수의사와 상담하세요.</em></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 사진 입력 -->
+<div class="page" id="pg-scan">
+  <div class="pg-title" style="margin-bottom:2px">📷 사진 자동 입력</div>
+  <div class="pg-sub" style="margin-bottom:14px">영수증·처방전·검사결과지를 찍으면 AI가 자동 입력합니다</div>
+  <div class="scan-g">
+    <div class="scan-gi"><span style="font-size:20px;display:block;margin-bottom:3px">🧾</span><span style="font-size:10px;color:var(--ts);font-weight:500">영수증</span></div>
+    <div class="scan-gi"><span style="font-size:20px;display:block;margin-bottom:3px">💊</span><span style="font-size:10px;color:var(--ts);font-weight:500">처방전</span></div>
+    <div class="scan-gi"><span style="font-size:20px;display:block;margin-bottom:3px">🔬</span><span style="font-size:10px;color:var(--ts);font-weight:500">혈액검사</span></div>
+    <div class="scan-gi"><span style="font-size:20px;display:block;margin-bottom:3px">📋</span><span style="font-size:10px;color:var(--ts);font-weight:500">소견서</span></div>
+  </div>
+  <input type="file" id="scanFile" accept="image/*" style="display:none">
+  <div class="scan-upload" id="scanUpload">
+    <div id="scanInner">
+      <div style="font-size:44px;margin-bottom:10px">📸</div>
+      <div style="font-size:15px;font-weight:600;color:var(--td);margin-bottom:5px">사진 선택 또는 촬영</div>
+      <div style="font-size:12px;color:var(--tm);margin-bottom:14px">영수증, 처방전, 검사결과지 모두 가능</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-p" id="btnCam">📷 카메라</button>
+        <button class="btn btn-s" id="btnGal">🖼️ 갤러리</button>
+      </div>
+    </div>
+    <div id="scanPrev" style="display:none">
+      <img id="scanImg" style="width:100%;border-radius:10px;max-height:260px;object-fit:contain;background:#f0f0f0;display:block;margin-bottom:10px">
+      <div style="display:flex;gap:9px">
+        <button class="btn btn-s" id="btnReScan" style="flex:1">🔄 다시</button>
+        <button class="btn btn-p" id="btnAnalyze" style="flex:2">✨ AI 분석</button>
+      </div>
+    </div>
+  </div>
+  <div id="scanLoading" style="display:none;text-align:center;padding:28px 14px;background:var(--w);border-radius:14px;margin-bottom:12px;border:1px solid var(--bd)">
+    <div style="font-size:36px;margin-bottom:10px">🤖</div>
+    <div style="font-size:14px;font-weight:600;color:var(--td);margin-bottom:5px">AI 분석 중...</div>
+    <div style="font-size:12px;color:var(--tm);margin-bottom:12px">처방전과 검사 항목을 읽고 있어요</div>
+    <div class="typing" style="justify-content:center"><span></span><span></span><span></span></div>
+  </div>
+  <div id="scanResult" style="display:none">
+    <div class="card">
+      <div class="ct" id="scanResultHdr">AI 분석 결과</div>
+      <div id="parsedList"></div>
+      <div style="margin-top:10px">
+        <button class="btn btn-s btn-w btn-sm" id="btnToggleRaw">📄 원문 텍스트</button>
+        <div id="rawBox" style="display:none;margin-top:8px;background:var(--c);border-radius:9px;padding:11px;font-size:12px;color:var(--ts);line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto"></div>
+      </div>
+      <div style="display:flex;gap:9px;margin-top:14px">
+        <button class="btn btn-s" id="btnScanAgain" style="flex:1">🔄 다른 사진</button>
+        <button class="btn btn-g" id="btnRegAll" style="flex:2">✅ 선택 항목 등록</button>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:6px">
+    <div class="ct" style="padding:0 2px;margin-bottom:8px">스캔 기록</div>
+    <div id="scanHist"><div style="font-size:13px;color:var(--tm)">스캔 기록 없음</div></div>
+  </div>
+</div>
+
+<!-- 설정 -->
+<div class="page" id="pg-set">
+  <div class="pg-title" style="margin-bottom:16px">설정</div>
+  <div class="set-sec">
+    <div class="set-ttl">앱 정보</div>
+    <div class="set-row"><div><div class="sr-lb">PawCare v3.0</div><div class="sr-sub">자가면역 뇌척수염 관리 앱</div></div></div>
+    <div class="set-row"><div><div class="sr-lb">현재 설치 코드 확인</div><div class="sr-sub">코드를 아는 기기만 접근 가능</div></div><button class="btn btn-s btn-sm" id="btnShowCode">보기</button></div>
+    <div class="set-row"><div><div class="sr-lb">설치 코드 변경</div><div class="sr-sub">새 코드로 교체합니다</div></div><button class="btn btn-s btn-sm" id="btnChangeCode">변경</button></div>
+  </div>
+  <div class="set-sec">
+    <div class="set-ttl">데이터</div>
+    <div class="set-row"><div><div class="sr-lb">백업 내보내기</div><div class="sr-sub">전체 기록을 JSON으로 저장</div></div><button class="btn btn-s btn-sm" id="btnExport">내보내기</button></div>
+    <div class="set-row"><div><div class="sr-lb">백업 가져오기</div><div class="sr-sub">내보내기 파일로 복원</div></div><button class="btn btn-s btn-sm" id="btnImport">가져오기</button></div>
+    <input type="file" id="importFile" accept=".json" style="display:none">
+    <div class="set-row" style="border-color:#EEB0B0"><div><div class="sr-lb" style="color:var(--red)">전체 데이터 삭제</div><div class="sr-sub">되돌릴 수 없습니다</div></div><button class="btn btn-r btn-sm" id="btnClearData">삭제</button></div>
+  </div>
+  <div class="set-sec">
+    <div class="set-ttl">기기 보안</div>
+    <div class="set-row"><div><div class="sr-lb">기기 등록 초기화</div><div class="sr-sub">다음 실행 시 코드 재입력 필요</div></div><button class="btn btn-s btn-sm" id="btnResetDevice">초기화</button></div>
+  </div>
+  <div style="text-align:center;padding:20px 0;color:var(--tm);font-size:12px;line-height:1.8">
+    모든 데이터는 이 기기에만 저장됩니다 🔒<br>외부 서버로 전송되지 않습니다
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- TABBAR -->
+<div class="tabbar">
+  <button class="tab active" data-pg="home"><span class="t-ic">🏠</span><span class="t-lb">홈</span></button>
+  <button class="tab" data-pg="neuro"><span class="t-ic" style="position:relative">🧠<span class="t-badge" id="neuroBadge">!</span></span><span class="t-lb">신경</span></button>
+  <button class="tab" data-pg="med"><span class="t-ic">💊</span><span class="t-lb">투약</span></button>
+  <button class="tab" data-pg="scan"><span class="t-ic">📷</span><span class="t-lb">스캔</span></button>
+  <button class="tab" id="tabMore"><span class="t-ic">⋯</span><span class="t-lb">더보기</span></button>
+</div>
+<div class="more-panel" id="morePanel">
+  <div class="more-grid">
+    <button class="more-btn" data-pg="test"><span class="mi">🔬</span><span class="ml">검사결과</span></button>
+    <button class="more-btn" data-pg="hosp"><span class="mi">🏥</span><span class="ml">병원기록</span></button>
+    <button class="more-btn" data-pg="cmp"><span class="mi">📊</span><span class="ml">경과비교</span></button>
+    <button class="more-btn" data-pg="ai"><span class="mi">✨</span><span class="ml">AI분석</span></button>
+    <button class="more-btn" data-pg="set"><span class="mi">⚙️</span><span class="ml">설정</span></button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="moPet"><div class="modal">
+  <div class="mhandle"></div><div class="mtitle">🐕 반려견 프로필</div>
+  <div class="fr2"><div class="fg"><label>이름</label><input id="pNm" placeholder="예: 초코"></div><div class="fg"><label>견종</label><input id="pBr" placeholder="예: 말티즈"></div></div>
+  <div class="fr2"><div class="fg"><label>나이</label><input id="pAg" placeholder="예: 7살"></div><div class="fg"><label>체중 (kg)</label><input type="number" id="pWt" step="0.1"></div></div>
+  <div class="fg"><label>확진명</label><input id="pDs" value="자가면역성 뇌척수염 (재발)"></div>
+  <div class="fr2"><div class="fg"><label>1차 발병일</label><input type="date" id="pO1"></div><div class="fg"><label>재발 확인일</label><input type="date" id="pO2"></div></div>
+  <div class="fg"><label>담당 수의사 / 병원</label><input id="pVt" placeholder="예: ○○동물병원 ○원장"></div>
+  <div class="mfoot"><button class="btn btn-s" id="btnPetX">취소</button><button class="btn btn-p" id="btnPetOK">저장</button></div>
+</div></div>
+
+<div class="mo" id="moNeuro"><div class="modal">
+  <div class="mhandle"></div><div class="mtitle">🧠 신경 증상 기록</div>
+  <div class="fr2"><div class="fg"><label>날짜</label><input type="date" id="nDt"></div><div class="fg"><label>컨디션</label><select id="nCd"><option value="5">😊 매우 좋음</option><option value="4">🙂 좋음</option><option value="3" selected>😐 보통</option><option value="2">😟 나쁨</option><option value="1">😰 매우 나쁨</option></select></div></div>
+  <div class="fg"><label>해당 신경 증상 (복수 선택 가능)</label><div class="nsym-g" id="nsymGrid"></div></div>
+  <div class="fg"><label>전반적 심각도</label><div class="sev-row" id="sevRow"><button class="sb s1" data-sv="1">1<br><span style="font-size:9px">없음</span></button><button class="sb s2" data-sv="2">2<br><span style="font-size:9px">경미</span></button><button class="sb s3" data-sv="3">3<br><span style="font-size:9px">중등</span></button><button class="sb s4" data-sv="4">4<br><span style="font-size:9px">심각</span></button><button class="sb s5" data-sv="5">5<br><span style="font-size:9px">위급</span></button></div></div>
+  <div class="fr2"><div class="fg"><label>보행 상태</label><select id="nWk"><option>정상</option><option>약간 비틀거림</option><option>심한 비틀거림</option><option>서있기 힘듦</option><option>보행 불가</option></select></div><div class="fg"><label>식욕</label><select id="nEt"><option>정상</option><option>약간 감소</option><option>절반 이하</option><option>거의 안 먹음</option><option>전혀 안 먹음</option></select></div></div>
+  <div class="fg"><label>상세 기록</label><textarea id="nDe" placeholder="증상 발생 시간, 지속 시간, 특이 사항..."></textarea></div>
+  <div class="fr2"><div class="fg"><label>체중 (kg)</label><input type="number" id="nWe" step="0.1"></div><div class="fg"><label>체온 °C</label><input type="number" id="nTe" step="0.1" placeholder="38.5"></div></div>
+  <div class="mfoot"><button class="btn btn-s" id="btnNeuroX">취소</button><button class="btn btn-p" id="btnNeuroOK">저장</button></div>
+</div></div>
+
+<div class="mo" id="moMed"><div class="modal">
+  <div class="mhandle"></div><div class="mtitle">💊 약 추가/수정</div>
+  <input type="hidden" id="mId">
+  <div class="fr2"><div class="fg"><label>약 이름</label><input id="mNm" placeholder="예: 프레드니솔론"></div><div class="fg"><label>분류</label><select id="mTp"><option value="steroid">스테로이드</option><option value="chemo">항암/면역억제</option><option value="other">기타</option></select></div></div>
+  <div class="fr2"><div class="fg"><label>용량</label><input id="mDs" placeholder="예: 20mg"></div><div class="fg"><label>복용 횟수</label><select id="mFq"><option>1일 1회</option><option>1일 2회</option><option>1일 3회</option><option>격일</option><option>주 1회</option><option>필요시</option></select></div></div>
+  <div class="fr2"><div class="fg"><label>시작일</label><input type="date" id="mSt"></div><div class="fg"><label>상태</label><select id="mSs"><option value="active">복용 중</option><option value="stop">중단</option></select></div></div>
+  <div class="fg"><label>처방 목적 / 메모</label><input id="mNo" placeholder="예: 뇌·척수 염증 억제"></div>
+  <div class="mfoot"><button class="btn btn-s" id="btnMedX">취소</button><button class="btn btn-p" id="btnMedOK">저장</button></div>
+</div></div>
+
+<div class="mo" id="moTest"><div class="modal">
+  <div class="mhandle"></div><div class="mtitle">🔬 검사 결과 추가</div>
+  <div class="fr2"><div class="fg"><label>검사일</label><input type="date" id="tDt"></div><div class="fg"><label>검사 종류</label><select id="tTp"><option>CBC</option><option>CRP</option><option>혈청화학</option><option>CSF 척수액</option><option>MRI</option><option>CT</option><option>초음파</option><option>소변검사</option><option>기타</option></select></div></div>
+  <div class="fr2"><div class="fg"><label>항목명</label><input id="tIt" placeholder="예: CRP, WBC, 총단백"></div><div class="fg"><label>결과값</label><input id="tVl" placeholder="예: 8.5"></div></div>
+  <div class="fr2"><div class="fg"><label>참조 범위</label><input id="tRf" placeholder="예: 0-1.0 mg/L"></div><div class="fg"><label>단위</label><input id="tUn" placeholder="예: mg/L"></div></div>
+  <div class="fr2"><div class="fg"><label>상태</label><select id="tSt"><option value="normal">✓ 정상</option><option value="high">↑ 높음</option><option value="low">↓ 낮음</option></select></div><div class="fg"><label>메모</label><input id="tNo" placeholder="수의사 코멘트"></div></div>
+  <div class="mfoot"><button class="btn btn-s" id="btnTestX">취소</button><button class="btn btn-p" id="btnTestOK">추가</button></div>
+</div></div>
+
+<div class="mo" id="moVisit"><div class="modal">
+  <div class="mhandle"></div><div class="mtitle">🏥 병원 방문 기록</div>
+  <div class="fr2"><div class="fg"><label>방문일</label><input type="date" id="vDt"></div><div class="fg"><label>병원명</label><input id="vHp" placeholder="예: ○○동물병원"></div></div>
+  <div class="fg"><label>방문 사유</label><input id="vRs" placeholder="예: 재발 후 치료 시작, 정기 모니터링"></div>
+  <div class="fg"><label>진찰 내용 및 처방</label><textarea id="vDe" placeholder="수의사 소견, 처방 변경, 치료 계획..."></textarea></div>
+  <div class="fg"><label>처방약 요약</label><input id="vRx" placeholder="예: 프레드니솔론 20mg 1일2회, 오메프라졸 추가"></div>
+  <div class="fr2"><div class="fg"><label>진료비 (원)</label><input type="number" id="vCt"></div><div class="fg"><label>다음 예약일</label><input type="date" id="vNx"></div></div>
+  <div class="mfoot"><button class="btn btn-s" id="btnVisitX">취소</button><button class="btn btn-p" id="btnVisitOK">저장</button></div>
+</div></div>
+
+<div class="mo" id="moP1"><div class="modal">
+  <div class="mhandle"></div><div class="mtitle">📋 1차 발병 기록</div>
+  <div class="fg"><label>발병 시기</label><input id="p1pe" placeholder="예: 2022년 3월"></div>
+  <div class="fg"><label>초기 주요 증상</label><textarea id="p1sy" placeholder="예: 뒷다리 약화, 보행 장애, 안구 진탕, 발작 2회"></textarea></div>
+  <div class="fr2"><div class="fg"><label>진단 시 CRP</label><input id="p1cr" placeholder="예: 12.5 mg/L"></div><div class="fg"><label>당시 체중</label><input id="p1wt" placeholder="예: 26.5kg"></div></div>
+  <div class="fg"><label>1차 치료 내용</label><textarea id="p1tr" placeholder="예: 프레드니솔론 2mg/kg, 사이클로포스파마이드, 입원 3주"></textarea></div>
+  <div class="fg"><label>치료 기간 및 호전 시점</label><input id="p1rc" placeholder="예: 8주 후 보행 회복, 4개월 후 관해"></div>
+  <div class="fg"><label>특이사항 / 추가 메모</label><textarea id="p1nt" placeholder="이상 수치, 합병증, 기타 기억할 내용..."></textarea></div>
+  <div class="mfoot"><button class="btn btn-s" id="btnP1X">취소</button><button class="btn btn-p" id="btnP1OK">저장</button></div>
+</div></div>
+
+<div class="mo" id="moCode"><div class="modal">
+  <div class="mhandle"></div><div class="mtitle">🔐 설치 코드 변경</div>
+  <div class="alert al-y" style="margin-bottom:14px"><span style="font-size:16px;flex-shrink:0">⚠️</span><div>코드 변경 후 다른 기기에서 접속하려면 새 코드가 필요합니다</div></div>
+  <div class="fg"><label>현재 코드 확인</label><input type="password" id="codeCur" placeholder="현재 설치 코드 입력"></div>
+  <div class="fg"><label>새 코드 (숫자 6~8자리)</label><input type="number" id="codeNew" placeholder="새 코드 입력"></div>
+  <div class="fg"><label>새 코드 확인</label><input type="number" id="codeNew2" placeholder="새 코드 재입력"></div>
+  <div class="mfoot"><button class="btn btn-s" id="btnCodeX">취소</button><button class="btn btn-p" id="btnCodeOK">변경</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var S=JSON.parse(localStorage.getItem('pc5')||'{}');
+S.pet=S.pet||{name:'',breed:'',age:'',weight:'',disease:'자가면역성 뇌척수염 (재발)',onset1:'',onset2:'',vet:''};
+S.meds=S.meds||[];S.neuro=S.neuro||[];S.tests=S.tests||[];
+S.visits=S.visits||[];S.p1=S.p1||{};S.medLogs=S.medLogs||[];
+S.aiHist=S.aiHist||[];S.scanHist=S.scanHist||[];
+var apiKey=localStorage.getItem('pc5k')||'';
+var ICODE_KEY='pc5_code',DEVICE_KEY='pc5_dev',DEFAULT_CODE='20251219';
+var curSev=0,checkedSyms={};
+var scanData=null,parsedList=[],parsedChk={};
+var neuroFilter='all';
+
+var NS=[
+  {k:'seizure',ic:'⚡',lb:'발작/경련',w:true},
+  {k:'ataxia',ic:'🌀',lb:'보행 실조'},
+  {k:'paresis',ic:'🦿',lb:'사지 마비',w:true},
+  {k:'nystagmus',ic:'👁️',lb:'안구 진탕'},
+  {k:'blind',ic:'🔴',lb:'시각 장애',w:true},
+  {k:'pain',ic:'😣',lb:'척추·목 통증'},
+  {k:'dizzy',ic:'💫',lb:'어지럼증'},
+  {k:'vomit',ic:'🤢',lb:'구토'},
+  {k:'fatigue',ic:'😴',lb:'심한 무기력'},
+  {k:'dysphagia',ic:'😮‍💨',lb:'연하 장애',w:true},
+  {k:'tremor',ic:'〰️',lb:'근육 떨림'},
+  {k:'behavior',ic:'😵',lb:'행동 이상'},
+];
+var CL={'5':'😊','4':'🙂','3':'😐','2':'😟','1':'😰'};
+var CN={'5':'매우 좋음','4':'좋음','3':'보통','2':'나쁨','1':'매우 나쁨'};
+var CC={'5':'#4E9060','4':'#7AB88A','3':'#C8982A','2':'#E07070','1':'#C04040'};
+var ML={steroid:'스테로이드',chemo:'항암/면역억제',other:'기타'};
+var MB={steroid:'bt',chemo:'bp',other:'bs'};
+var MC={steroid:'mc-s',chemo:'mc-c',other:'mc-o'};
+var MSE={steroid:'면역억제→감염 위험↑, 혈당·혈압 상승, 위장 장애, 절대 갑자기 중단 금지',
+  chemo:'구토·식욕부진, WBC 저하→감염 주의, 골수 억제 모니터링',other:'처방전 참조'};
+
+function sv(){localStorage.setItem('pc5',JSON.stringify(S))}
+function td(){return new Date().toISOString().slice(0,10)}
+function fmtD(d){if(!d)return '';var x=new Date(d);return(x.getMonth()+1)+'/'+x.getDate()}
+function fmtFull(d){if(!d)return '';var x=new Date(d);return x.getFullYear()+'.'+(x.getMonth()+1)+'.'+x.getDate()}
+function toast(msg,err){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=err?'#C04040':'var(--navy)';
+  t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2600);
+}
+
+// LOCK
+function getCode(){return localStorage.getItem(ICODE_KEY)||DEFAULT_CODE}
+function isDev(){return localStorage.getItem(DEVICE_KEY)==='1'}
+function regDev(){localStorage.setItem(DEVICE_KEY,'1')}
+var lockIn='';
+function initLock(){
+  if(isDev()){hideLock();showInstallTip();return}
+  document.getElementById('lmsg').textContent='설치 코드를 입력하세요';
+}
+function hideLock(){
+  var ls=document.getElementById('LS');
+  ls.classList.add('fadeout');
+  setTimeout(function(){ls.style.display='none'},420);
+}
+function lockErr(msg){
+  for(var i=0;i<6;i++){var d=document.getElementById('ld'+i);d.classList.remove('on');d.classList.add('err')}
+  document.getElementById('lmsg').textContent=msg||'코드가 맞지 않습니다';
+  lockIn='';
+  setTimeout(function(){
+    for(var i=0;i<6;i++){document.getElementById('ld'+i).classList.remove('err')}
+    document.getElementById('lmsg').textContent='설치 코드를 입력하세요';
+  },900);
+}
+function lockOK(){document.getElementById('lmsg').textContent='✓ 등록 완료!';regDev();hideLock();showInstallTip()}
+function updDots(){for(var i=0;i<6;i++){var d=document.getElementById('ld'+i);d.classList.remove('on','err');if(i<lockIn.length)d.classList.add('on')}}
+document.getElementById('lpad').addEventListener('click',function(e){
+  var k=e.target.closest('[data-k]');if(!k)return;
+  var v=k.dataset.k;if(v==='')return;
+  if(v==='del'){lockIn=lockIn.slice(0,-1);updDots();return}
+  if(lockIn.length>=8)return;
+  lockIn+=v;updDots();
+  var code=getCode();
+  if(lockIn.length>=code.length){
+    setTimeout(function(){if(lockIn===code){lockOK()}else{lockErr('코드가 맞지 않습니다')}},120);
+  }
+});
+function showInstallTip(){
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  var isStandalone=window.navigator.standalone===true;
+  if(isIOS&&!isStandalone&&!localStorage.getItem('pc5_ig')){
+    localStorage.setItem('pc5_ig','1');
+    setTimeout(function(){document.getElementById('IG').classList.add('show')},900);
+  }
+}
+document.getElementById('btnIG').addEventListener('click',function(){document.getElementById('IG').classList.remove('show')});
+
+// MODAL
+function openM(id){
+  document.getElementById(id).classList.add('open');
+  document.querySelectorAll('#'+id+' input[type=date]').forEach(function(f){if(!f.value)f.value=td()});
+}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.mo').forEach(function(m){
+  m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('open')});
+});
+
+// NAVIGATION
+var morePanel=document.getElementById('morePanel');
+function goPage(pg){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.tab[data-pg]').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.more-btn[data-pg]').forEach(function(b){b.classList.remove('am')});
+  var p=document.getElementById('pg-'+pg);if(p)p.classList.add('active');
+  var tb=document.querySelector('.tab[data-pg="'+pg+'"]');if(tb)tb.classList.add('active');
+  var mb=document.querySelector('.more-btn[data-pg="'+pg+'"]');if(mb)mb.classList.add('am');
+  morePanel.classList.remove('open');
+  document.getElementById('mainArea').scrollTop=0;
+  var r={home:rHome,neuro:rNeuro,med:rMed,test:rTest,hosp:rHosp,cmp:rCmp,ai:rAI,scan:rScan};
+  if(r[pg])r[pg]();
+}
+document.querySelectorAll('.tab[data-pg]').forEach(function(b){b.addEventListener('click',function(){goPage(b.dataset.pg)})});
+document.getElementById('tabMore').addEventListener('click',function(){morePanel.classList.toggle('open')});
+document.querySelectorAll('.more-btn[data-pg]').forEach(function(b){b.addEventListener('click',function(){goPage(b.dataset.pg)})});
+document.getElementById('mainArea').addEventListener('click',function(){morePanel.classList.remove('open')});
+
+// PET
+document.getElementById('btnPet').addEventListener('click',function(){
+  var p=S.pet;
+  document.getElementById('pNm').value=p.name||'';document.getElementById('pBr').value=p.breed||'';
+  document.getElementById('pAg').value=p.age||'';document.getElementById('pWt').value=p.weight||'';
+  document.getElementById('pDs').value=p.disease||'자가면역성 뇌척수염 (재발)';
+  document.getElementById('pVt').value=p.vet||'';
+  if(p.onset1)document.getElementById('pO1').value=p.onset1;
+  if(p.onset2)document.getElementById('pO2').value=p.onset2;
+  openM('moPet');
+});
+document.getElementById('btnPetX').addEventListener('click',function(){closeM('moPet')});
+document.getElementById('btnPetOK').addEventListener('click',function(){
+  S.pet={name:document.getElementById('pNm').value||'우리 강아지',breed:document.getElementById('pBr').value,
+    age:document.getElementById('pAg').value,weight:document.getElementById('pWt').value,
+    disease:document.getElementById('pDs').value,vet:document.getElementById('pVt').value,
+    onset1:document.getElementById('pO1').value,onset2:document.getElementById('pO2').value};
+  sv();closeM('moPet');updHdr();toast('프로필 저장 완료 🐾');
+  if(S.pet.onset1)document.getElementById('ph1').textContent=fmtD(S.pet.onset1);
+  if(S.pet.onset2)document.getElementById('ph2').textContent=fmtD(S.pet.onset2);
+});
+function updHdr(){
+  var p=S.pet;
+  document.getElementById('hdrName').textContent=p.name||'프로필';
+  var ht=document.getElementById('hTitle');if(ht)ht.textContent=(p.name||'반려견')+'의 투병 일지';
+  var info=[p.breed,p.age?p.age+'살':'',p.weight?p.weight+'kg':'',p.disease].filter(Boolean).join(' · ');
+  var hs=document.getElementById('hSub');if(hs)hs.textContent=info||'자가면역성 뇌척수염 · 재발 치료 중';
+}
+
+// NEURO
+document.getElementById('btnAddNeuro').addEventListener('click',function(){
+  checkedSyms={};curSev=0;
+  document.querySelectorAll('.sb').forEach(function(b){b.classList.remove('on')});
+  var g=document.getElementById('nsymGrid');g.innerHTML='';
+  NS.forEach(function(s){
+    var b=document.createElement('button');b.className='nsym';b.dataset.sym=s.k;
+    b.innerHTML='<span style="font-size:15px">'+s.ic+'</span><span>'+s.lb+'</span>'+(s.w?'<span class="nw">⚠</span>':'');
+    b.addEventListener('click',function(){
+      if(checkedSyms[s.k]){delete checkedSyms[s.k];b.classList.remove('on')}
+      else{checkedSyms[s.k]=true;b.classList.add('on')}
+    });
+    g.appendChild(b);
+  });
+  ['nDe','nWe','nTe'].forEach(function(id){document.getElementById(id).value=''});
+  document.getElementById('nCd').value='3';
+  openM('moNeuro');
+});
+document.getElementById('sevRow').addEventListener('click',function(e){
+  var b=e.target.closest('[data-sv]');if(!b)return;
+  curSev=parseInt(b.dataset.sv);
+  document.querySelectorAll('.sb').forEach(function(x,i){x.classList.remove('on');if(i<curSev)x.classList.add('on')});
+});
+document.getElementById('btnNeuroX').addEventListener('click',function(){closeM('moNeuro')});
+document.getElementById('btnNeuroOK').addEventListener('click',function(){
+  var r={id:Date.now(),date:document.getElementById('nDt').value||td(),
+    cond:document.getElementById('nCd').value,syms:Object.keys(checkedSyms),sev:curSev,
+    walk:document.getElementById('nWk').value,eat:document.getElementById('nEt').value,
+    detail:document.getElementById('nDe').value,weight:document.getElementById('nWe').value,
+    temp:document.getElementById('nTe').value};
+  S.neuro.unshift(r);sv();closeM('moNeuro');rNeuro();rHome();updCrisis();
+  var hw=r.syms.some(function(k){return NS.find(function(n){return n.k===k&&n.w})});
+  if(r.sev>=4||hw)document.getElementById('neuroBadge').classList.add('show');
+  toast('신경 증상 기록 완료 🧠');
+});
+document.querySelectorAll('[data-nf]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    neuroFilter=btn.dataset.nf;
+    document.querySelectorAll('[data-nf]').forEach(function(b){b.className='btn btn-s btn-sm'});
+    btn.className='btn btn-p btn-sm';
+    rNeuro();
+  });
+});
+function rNeuro(){
+  var el=document.getElementById('neuroList');
+  var data=S.neuro.slice();
+  if(neuroFilter==='7'){var d7=new Date();d7.setDate(d7.getDate()-7);data=data.filter(function(r){return new Date(r.date)>=d7})}
+  else if(neuroFilter==='30'){var d30=new Date();d30.setDate(d30.getDate()-30);data=data.filter(function(r){return new Date(r.date)>=d30})}
+  else if(neuroFilter==='hi'){data=data.filter(function(r){return r.sev>=3})}
+  if(!data.length){el.innerHTML='<div class="empty"><span class="empty-ic">🧠</span>해당 기간 기록 없음</div>';return}
+  el.innerHTML='';
+  data.forEach(function(r){
+    var d=new Date(r.date);
+    var sh=(r.syms||[]).map(function(k){var n=NS.find(function(x){return x.k===k});return n?'<span class="badge '+(n.w?'br':'bt')+'">'+n.ic+' '+n.lb+'</span>':''}).join('');
+    var sc=r.sev>=4?'var(--red)':r.sev>=3?'var(--yel)':'var(--grn)';
+    var div=document.createElement('div');div.className='log-item';
+    div.innerHTML='<div class="ld"><div class="lm">'+d.toLocaleString('ko-KR',{month:'short'})+'</div><div class="lday">'+d.getDate()+'</div></div>'
+      +'<div class="lb"><div style="display:flex;justify-content:space-between;align-items:flex-start">'
+      +'<div class="lt">'+CL[r.cond]+' '+CN[r.cond]+' <span style="color:'+sc+';font-size:12px">심각도 '+(r.sev||'—')+'/5</span></div>'
+      +'<button class="xbtn" data-id="'+r.id+'" data-tp="neuro">×</button></div>'
+      +'<div style="font-size:12px;color:var(--tm);margin:3px 0">보행: '+r.walk+' · 식욕: '+r.eat+(r.weight?' · '+r.weight+'kg':'')+(r.temp?' · '+r.temp+'°C':'')+'</div>'
+      +(r.detail?'<div class="ldesc">'+r.detail+'</div>':'')
+      +(sh?'<div class="ltags">'+sh+'</div>':'')
+      +'</div>';
+    el.appendChild(div);
+  });
+}
+function updCrisis(){
+  var r=S.neuro[0];var p=document.getElementById('hCrisis');
+  if(!r||r.sev<4){p.innerHTML='';document.getElementById('hdrBadge').style.display='none';return}
+  p.innerHTML='<div class="alert al-r"><span style="font-size:20px;flex-shrink:0">🚨</span><div><strong>고위험 증상 기록됨 — 심각도 '+r.sev+'/5</strong><br>'+r.date+' 기록. 담당 수의사에게 즉시 연락하세요.</div></div>';
+  document.getElementById('hdrBadge').style.display='inline';
+}
+
+// MEDS
+document.getElementById('btnAddMed').addEventListener('click',function(){
+  document.getElementById('mId').value='';
+  ['mNm','mDs','mNo'].forEach(function(id){document.getElementById(id).value=''});
+  document.getElementById('mTp').value='steroid';document.getElementById('mFq').value='1일 1회';
+  document.getElementById('mSs').value='active';
+  openM('moMed');
+});
+document.getElementById('btnMedX').addEventListener('click',function(){closeM('moMed')});
+document.getElementById('btnMedOK').addEventListener('click',function(){
+  var eid=document.getElementById('mId').value;
+  var m={id:eid?parseInt(eid):Date.now(),name:document.getElementById('mNm').value,
+    type:document.getElementById('mTp').value,dose:document.getElementById('mDs').value,
+    freq:document.getElementById('mFq').value,start:document.getElementById('mSt').value,
+    status:document.getElementById('mSs').value,note:document.getElementById('mNo').value};
+  if(!m.name){toast('약 이름을 입력하세요',1);return}
+  if(eid){var idx=S.meds.findIndex(function(x){return x.id===parseInt(eid)});if(idx>=0)S.meds[idx]=m}
+  else S.meds.push(m);
+  sv();closeM('moMed');rMed();rHome();toast((eid?'수정':'등록')+' 완료 💊');
+});
+function editMed(id){
+  var m=S.meds.find(function(x){return x.id===id});if(!m)return;
+  document.getElementById('mId').value=m.id;
+  document.getElementById('mNm').value=m.name;document.getElementById('mTp').value=m.type;
+  document.getElementById('mDs').value=m.dose;document.getElementById('mFq').value=m.freq;
+  document.getElementById('mSt').value=m.start||'';document.getElementById('mSs').value=m.status;
+  document.getElementById('mNo').value=m.note||'';
+  openM('moMed');
+}
+function logMed(id,done){
+  var m=S.meds.find(function(x){return x.id===id});if(!m)return;
+  S.medLogs=S.medLogs.filter(function(l){return !(l.medId===id&&l.date===td())});
+  S.medLogs.push({medId:id,name:m.name,date:td(),done:done,ts:Date.now()});
+  sv();rMed();rHome();toast(done?'✅ '+m.name+' 복용 완료':'⏭ '+m.name+' 건너뜀');
+}
+function rMed(){
+  var el=document.getElementById('medList');
+  var act=S.meds.filter(function(m){return m.status==='active'});
+  var logs=S.medLogs.filter(function(l){return l.date===td()});
+  var doneCnt=logs.filter(function(l){return l.done}).length;
+  var pct=act.length?Math.round(doneCnt/act.length*100):0;
+  document.getElementById('todayPct').textContent=act.length?pct+'% 완료':'';
+  var tcl=document.getElementById('todayCheckList');
+  if(!act.length){tcl.innerHTML='<div style="font-size:13px;color:var(--tm)">복용 중인 약 없음</div>'}
+  else{tcl.innerHTML=act.map(function(m){
+    var lg=logs.find(function(l){return l.medId===m.id});
+    var st=lg?(lg.done?'done':'skip'):'none';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)">'
+      +'<div><div style="font-size:13px;font-weight:600">'+m.name+'</div>'
+      +'<div style="font-size:11px;color:var(--tm)">'+m.dose+' · '+m.freq+'</div></div>'
+      +'<div style="display:flex;gap:6px;align-items:center">'
+      +(st==='done'?'<span style="font-size:20px">✅</span>':st==='skip'?'<span style="font-size:20px">⏭</span>':'')
+      +(st==='none'?'<button class="btn btn-g btn-sm" data-med="'+m.id+'" data-done="1">복용</button><button class="btn btn-s btn-sm" data-med="'+m.id+'" data-done="0">건너뜀</button>':'')
+      +'</div></div>'}).join('')}
+  if(!S.meds.length){el.innerHTML='<div class="empty"><span class="empty-ic">💊</span>약을 추가해주세요</div>';return}
+  el.innerHTML='';
+  S.meds.forEach(function(m){
+    var act2=m.status==='active';
+    var div=document.createElement('div');div.className='mc '+(act2?MC[m.type]||'mc-o':'mc-x');
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px">'
+      +'<div class="mn">'+m.name+'</div>'
+      +'<div style="display:flex;gap:5px;align-items:center">'
+      +'<span class="badge '+(act2?MB[m.type]||'bs':'bg')+'">'+(act2?ML[m.type]||'기타':'중단')+'</span>'
+      +'<button class="xbtn" style="font-size:14px" data-edit-med="'+m.id+'">✏️</button>'
+      +'<button class="xbtn" data-id="'+m.id+'" data-tp="med">×</button></div></div>'
+      +'<div class="md">'+m.dose+' · '+m.freq+(m.note?' · '+m.note:'')+(m.start?' · 시작 '+m.start:'')+'</div>'
+      +(act2?'<div class="mse"><strong>⚠ 부작용 모니터링</strong>'+(MSE[m.type]||'')+'</div>':'');
+    el.appendChild(div);
+  });
+  var tl=S.medLogs.filter(function(l){return l.date===td()}).slice(-6).reverse();
+  var le=document.getElementById('medLog');
+  le.innerHTML=tl.length?tl.map(function(l){
+    return '<div class="tli"><div class="tld" style="background:'+(l.done?'var(--sage)':'var(--tm)')+'"></div>'
+      +'<div><div class="tlt">'+l.name+' '+(l.done?'✅ 복용 완료':'⏭ 건너뜀')+'</div>'
+      +'<div class="tlm">'+new Date(l.ts).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+'</div></div></div>'
+  }).join(''):'<div style="font-size:13px;color:var(--tm)">오늘 기록 없음</div>';
+}
+
+// TESTS
+document.getElementById('btnAddTest').addEventListener('click',function(){
+  ['tIt','tVl','tRf','tUn','tNo'].forEach(function(id){document.getElementById(id).value=''});
+  openM('moTest');
+});
+document.getElementById('btnTestX').addEventListener('click',function(){closeM('moTest')});
+document.getElementById('btnTestOK').addEventListener('click',function(){
+  var t={id:Date.now(),date:document.getElementById('tDt').value||td(),type:document.getElementById('tTp').value,
+    item:document.getElementById('tIt').value,val:document.getElementById('tVl').value,
+    ref:document.getElementById('tRf').value,unit:document.getElementById('tUn').value,
+    status:document.getElementById('tSt').value,note:document.getElementById('tNo').value};
+  if(!t.item){toast('항목명을 입력하세요',1);return}
+  S.tests.unshift(t);sv();closeM('moTest');rTest();rHome();toast('검사 결과 추가 완료 🔬');
+});
+function rTest(){
+  var crp=S.tests.filter(function(t){return t.item.toUpperCase().includes('CRP')}).sort(function(a,b){return b.date.localeCompare(a.date)});
+  var wbc=S.tests.filter(function(t){return t.item.toUpperCase().includes('WBC')||t.item.includes('백혈구')}).sort(function(a,b){return b.date.localeCompare(a.date)});
+  var img=S.tests.filter(function(t){return t.type==='MRI'||t.type==='CT'}).sort(function(a,b){return b.date.localeCompare(a.date)});
+  document.getElementById('mCRP').textContent=crp.length?crp[0].val:'—';
+  document.getElementById('mWBC').textContent=wbc.length?wbc[0].val:'—';
+  document.getElementById('mImg').textContent=img.length?img[0].date+'\n'+(img[0].note||img[0].val):'기록 없음';
+  if(crp.length>=2){
+    var cc=document.getElementById('crpChartCard');cc.style.display='block';
+    var ch=document.getElementById('crpChart');
+    var vals=crp.slice(0,6).map(function(x){return parseFloat(x.val)||0});
+    var max=Math.max.apply(null,vals);
+    ch.innerHTML=crp.slice(0,6).reverse().map(function(x){
+      var v=parseFloat(x.val)||0;var pct=max>0?Math.round(v/max*100):0;
+      var col=x.status==='normal'?'var(--grn)':x.status==='high'?'var(--red)':'var(--yel)';
+      return '<div class="bar-r"><div class="bar-l">'+x.date.slice(5)+'</div>'
+        +'<div class="bar-w"><div class="bar-f" style="width:'+pct+'%;background:'+col+'"></div></div>'
+        +'<div class="bar-v" style="color:'+col+'">'+x.val+'</div></div>';
+    }).join('');
+  }
+  var el=document.getElementById('testBody');
+  if(!S.tests.length){el.innerHTML='<tr><td colspan="5" class="empty" style="text-align:center">검사 결과 없음</td></tr>';return}
+  el.innerHTML='';
+  S.tests.forEach(function(t){
+    var cls=t.status==='normal'?'ok':t.status==='high'?'hi':'lo';
+    var lbl=t.status==='normal'?'✓ 정상':t.status==='high'?'↑ 높음':'↓ 낮음';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td style="color:var(--tm);font-size:11px;white-space:nowrap">'+t.date+'</td>'
+      +'<td><div style="font-weight:600;font-size:13px">'+t.item+'</div>'
+      +'<div style="font-size:11px;color:var(--tm)">'+t.type+(t.unit?' · '+t.unit:'')+'</div></td>'
+      +'<td><div style="font-weight:700;font-size:14px">'+t.val+'</div>'
+      +(t.ref?'<div style="font-size:10px;color:var(--tm)">'+t.ref+'</div>':'')+'</td>'
+      +'<td class="'+cls+'" style="white-space:nowrap;font-size:12px">'+lbl+'</td>'
+      +'<td><button class="xbtn" data-id="'+t.id+'" data-tp="test" style="font-size:15px">×</button></td>';
+    el.appendChild(tr);
+  });
+}
+
+// VISITS
+document.getElementById('btnAddVisit').addEventListener('click',function(){
+  ['vHp','vRs','vDe','vRx','vCt'].forEach(function(id){document.getElementById(id).value=''});
+  document.getElementById('vNx').value='';
+  openM('moVisit');
+});
+document.getElementById('btnVisitX').addEventListener('click',function(){closeM('moVisit')});
+document.getElementById('btnVisitOK').addEventListener('click',function(){
+  var v={id:Date.now(),date:document.getElementById('vDt').value||td(),
+    hosp:document.getElementById('vHp').value,reason:document.getElementById('vRs').value,
+    detail:document.getElementById('vDe').value,rx:document.getElementById('vRx').value,
+    cost:document.getElementById('vCt').value,next:document.getElementById('vNx').value};
+  if(!v.reason){toast('방문 사유를 입력하세요',1);return}
+  S.visits.unshift(v);sv();closeM('moVisit');rHosp();rHome();toast('병원 기록 저장 🏥');
+});
+function rHosp(){
+  var el=document.getElementById('visitList');
+  var total=S.visits.length;
+  var now=new Date();
+  var thisM=S.visits.filter(function(v){var d=new Date(v.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()}).length;
+  var totalCost=S.visits.reduce(function(a,v){return a+(parseFloat(v.cost)||0)},0);
+  document.getElementById('vTotal').textContent=total;
+  document.getElementById('vThisMonth').textContent=thisM;
+  document.getElementById('vTotalCost').textContent=totalCost?Math.round(totalCost/10000):'0';
+  if(!total){el.innerHTML='<div class="empty"><span class="empty-ic">🏥</span>방문 기록 없음</div>';return}
+  el.innerHTML='';
+  S.visits.forEach(function(v){
+    var div=document.createElement('div');div.className='vc';
+    div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+      +'<div><div class="vt">'+(v.hosp||'동물병원')+' — '+v.reason+'</div>'
+      +'<div class="vd">'+fmtFull(v.date)+(v.next?' · 다음: '+fmtFull(v.next):'')+'</div></div>'
+      +'<button class="xbtn" data-id="'+v.id+'" data-tp="visit">×</button></div>'
+      +(v.detail?'<div class="vbody">'+v.detail+'</div>':'')
+      +(v.rx?'<div style="margin-top:7px;font-size:12px;background:var(--pl);border-radius:7px;padding:6px 9px;color:var(--pur)">💊 '+v.rx+'</div>':'')
+      +(v.cost?'<div style="margin-top:7px;font-size:12px;color:var(--tm)">진료비: <strong style="color:var(--td)">'+Number(v.cost).toLocaleString()+'원</strong></div>':'');
+    el.appendChild(div);
+  });
+}
+
+// COMPARE
+document.getElementById('btnP1').addEventListener('click',function(){
+  var p=S.p1;
+  ['pe','sy','cr','wt','tr','rc','nt'].forEach(function(k){var e=document.getElementById('p1'+k);if(e)e.value=p[k]||''});
+  openM('moP1');
+});
+document.getElementById('btnP1X').addEventListener('click',function(){closeM('moP1')});
+document.getElementById('btnP1OK').addEventListener('click',function(){
+  S.p1={pe:document.getElementById('p1pe').value,sy:document.getElementById('p1sy').value,
+    cr:document.getElementById('p1cr').value,wt:document.getElementById('p1wt').value,
+    tr:document.getElementById('p1tr').value,rc:document.getElementById('p1rc').value,
+    nt:document.getElementById('p1nt').value};
+  sv();closeM('moP1');rCmp();toast('1차 발병 기록 저장 완료');
+});
+function crow(k,v){return v?'<div class="cr"><div class="ck">'+k+'</div><div style="flex:1;font-size:13px">'+v+'</div></div>':''}
+function rCmp(){
+  var p=S.p1,e1=document.getElementById('cmp1');
+  if(!p.pe&&!p.sy){e1.innerHTML='<div style="font-size:13px;color:var(--tm)">위 버튼을 눌러 입력하세요</div>'}
+  else{e1.innerHTML=crow('시기',p.pe)+crow('증상',p.sy)+crow('CRP',p.cr)+crow('체중',p.wt)+crow('치료',p.tr)+crow('호전',p.rc)+(p.nt?crow('메모',p.nt):'')}
+  var rn=S.neuro[0];
+  var rc=S.tests.filter(function(t){return t.item.toUpperCase().includes('CRP')})[0];
+  var am=S.meds.filter(function(m){return m.status==='active'}).map(function(m){return m.name+' '+m.dose}).join(', ');
+  var e2=document.getElementById('cmp2');
+  e2.innerHTML=crow('재발 확인',S.pet.onset2?fmtFull(S.pet.onset2):'미기재')
+    +crow('최근 증상',rn?(rn.syms||[]).map(function(k){var n=NS.find(function(x){return x.k===k});return n?n.lb:k}).join(', '):'기록 없음')
+    +crow('최근 CRP',rc?rc.val+(rc.unit?' '+rc.unit:'')+' ('+rc.date+')':'기록 없음')
+    +crow('현재 투약',am||'기록 없음')
+    +crow('컨디션',rn?CN[rn.cond]:'기록 없음')
+    +crow('체중',S.pet.weight?S.pet.weight+'kg':'미기재');
+}
+
+// HOME
+function rHome(){
+  updHdr();
+  document.getElementById('sM').textContent=S.meds.filter(function(m){return m.status==='active'}).length;
+  document.getElementById('sN').textContent=S.neuro.filter(function(r){return r.date===td()}).reduce(function(a,r){return a+(r.syms||[]).length},0);
+  document.getElementById('sT').textContent=S.tests.length;
+  document.getElementById('sV').textContent=S.visits.length;
+  var act=S.meds.filter(function(m){return m.status==='active'});
+  var dm=document.getElementById('hMeds');
+  if(!act.length){dm.innerHTML='<div class="empty" style="padding:10px 0"><span style="color:var(--tm);font-size:13px">약을 등록해주세요</span></div>'}
+  else{
+    var logs=S.medLogs.filter(function(l){return l.date===td()});
+    var doneCnt=logs.filter(function(l){return l.done}).length;
+    document.getElementById('medTodayBadge').textContent=doneCnt+'/'+act.length+' 완료';
+    dm.innerHTML=act.map(function(m){var lg=logs.find(function(l){return l.medId===m.id});var st=lg?(lg.done?'✅':'⏭'):'⏳';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd)">'
+        +'<div><div style="font-size:13px;font-weight:600">'+m.name+'</div><div style="font-size:11px;color:var(--tm)">'+m.dose+' · '+m.freq+'</div></div>'
+        +'<span style="font-size:19px">'+st+'</span></div>'}).join('');
+  }
+  var r5=S.neuro.slice(0,5);
+  var dc=document.getElementById('hCond');
+  dc.innerHTML=r5.length?r5.map(function(r){
+    return '<div class="bar-r"><div class="bar-l">'+r.date.slice(5)+'</div>'
+      +'<div class="bar-w"><div class="bar-f" style="width:'+parseInt(r.cond)/5*100+'%;background:'+CC[r.cond]+'"></div></div>'
+      +'<div class="bar-v">'+CL[r.cond]+'</div></div>'}).join('')
+    :'<div style="font-size:13px;color:var(--tm);text-align:center;padding:8px">기록 없음</div>';
+  var items=[].concat(
+    S.neuro.map(function(r){return{tp:'neuro',ts:new Date(r.date).getTime(),lb:'신경: '+CN[r.cond]+(r.sev?' · 심각도 '+r.sev+'/5':''),dt:r.date}}),
+    S.visits.map(function(v){return{tp:'visit',ts:new Date(v.date).getTime(),lb:'병원: '+(v.hosp||'')+' '+v.reason,dt:v.date}}),
+    S.tests.map(function(t){return{tp:'test',ts:new Date(t.date).getTime(),lb:'검사: '+t.item+' = '+t.val+(t.unit?' '+t.unit:''),dt:t.date}}),
+    S.meds.map(function(m){return{tp:'med',ts:new Date(m.start||td()).getTime(),lb:'투약 등록: '+m.name+' '+m.dose,dt:m.start||td()}})
+  ).sort(function(a,b){return b.ts-a.ts}).slice(0,7);
+  var dc2={neuro:'#D05050',visit:'var(--t)',test:'var(--yel)',med:'var(--sage)'};
+  var da=document.getElementById('hAct');
+  da.innerHTML=items.length?items.map(function(i){
+    return '<div class="tli"><div class="tld" style="background:'+dc2[i.tp]+'"></div>'
+      +'<div><div class="tlt">'+i.lb+'</div><div class="tlm">'+i.dt+'</div></div></div>'}).join('')
+    :'<div style="font-size:13px;color:var(--tm)">기록이 없습니다</div>';
+  updCrisis();
+}
+
+// AI
+function rAI(){document.getElementById('keyNotice').style.display=apiKey?'none':'flex'}
+document.getElementById('btnSaveKey').addEventListener('click',function(){
+  var v=document.getElementById('apiKeyInp').value.trim();
+  if(!v.startsWith('sk-')){toast('올바른 API 키를 입력하세요',1);return}
+  apiKey=v;localStorage.setItem('pc5k',apiKey);document.getElementById('keyNotice').style.display='none';toast('API 키 저장 완료 ✓');
+});
+document.getElementById('qbtns').addEventListener('click',function(e){
+  var b=e.target.closest('[data-q]');if(b){document.getElementById('aiInp').value=b.dataset.q;document.getElementById('aiInp').focus()}
+});
+document.getElementById('aiInp').addEventListener('keydown',function(e){if(e.key==='Enter')sendAI()});
+document.getElementById('aiSend').addEventListener('click',sendAI);
+function appMsg(role,text,sv2){
+  if(sv2===undefined)sv2=true;
+  var el=document.getElementById('aiMsgs');
+  var d=document.createElement('div');d.className='msg '+role;
+  var html=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  d.innerHTML='<div class="mav '+role+'">'+(role==='user'?'🙋':'🧠')+'</div><div class="mb">'+html+'</div>';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+  if(sv2){S.aiHist.push({role:role,content:text});if(S.aiHist.length>40)S.aiHist=S.aiHist.slice(-40);sv()}
+}
+function buildCtx(){
+  var p=S.pet;
+  var L=['[반려견]','이름:'+p.name+', 견종:'+p.breed+', 나이:'+p.age+', 체중:'+p.weight+'kg',
+    '진단:'+p.disease,'1차발병:'+p.onset1+', 재발:'+p.onset2,'수의사:'+p.vet,''];
+  if(S.p1.pe){L.push('[1차발병]','시기:'+S.p1.pe+', 증상:'+S.p1.sy,'CRP:'+S.p1.cr+', 치료:'+S.p1.tr+', 호전:'+S.p1.rc,'');}
+  if(S.meds.length){L.push('[투약]');S.meds.forEach(function(m){L.push('-'+m.name+' '+m.dose+' '+m.freq+' ['+(m.type==='steroid'?'스테로이드':m.type==='chemo'?'항암':'기타')+'] '+(m.status==='active'?'복용중':'중단'))});L.push('');}
+  if(S.neuro.length){L.push('[신경증상 최근5]');S.neuro.slice(0,5).forEach(function(r){var s=(r.syms||[]).map(function(k){var n=NS.find(function(x){return x.k===k});return n?n.lb:k}).join(',');L.push('-'+r.date+': '+CN[r.cond]+', 심각도'+(r.sev||0)+'/5, ['+s+'], 보행:'+r.walk+', 식욕:'+r.eat+(r.detail?', '+r.detail.slice(0,60):''))});L.push('');}
+  if(S.tests.length){L.push('[검사 최근5]');S.tests.slice(0,5).forEach(function(t){L.push('-'+t.date+':'+t.item+'='+t.val+(t.unit?' '+t.unit:'')+'('+t.ref+','+(t.status==='normal'?'정상':t.status==='high'?'높음':'낮음')+')'+(t.note?' '+t.note:''))});L.push('');}
+  if(S.visits.length){L.push('[병원방문 최근3]');S.visits.slice(0,3).forEach(function(v){L.push('-'+v.date+':'+v.hosp+' '+v.reason+(v.detail?' '+v.detail.slice(0,80):''))});}
+  return L.join('\n');
+}
+async function sendAI(){
+  var inp=document.getElementById('aiInp'),q=inp.value.trim();if(!q)return;
+  if(!apiKey){toast('API 키를 먼저 입력해주세요',1);return}
+  inp.value='';appMsg('user',q);
+  var btn=document.getElementById('aiSend');btn.disabled=true;btn.textContent='...';
+  var me=document.getElementById('aiMsgs');
+  var ty=document.createElement('div');ty.className='msg ai';ty.id='aiTy';
+  ty.innerHTML='<div class="mav ai">🧠</div><div class="mb"><div class="typing"><span></span><span></span><span></span></div></div>';
+  me.appendChild(ty);me.scrollTop=me.scrollHeight;
+  var hist=S.aiHist.slice(-10).filter(function(m){return m.content!==q}).map(function(m){return{role:m.role,content:m.content}});
+  hist.push({role:'user',content:q});
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
+        system:'소동물 신경학·자가면역 전문 수의사 어시스턴트. 자가면역성 뇌척수염(2년 전 1차, 현재 재발), 항암제+스테로이드 치료 중. 한국어로 친절하고 전문적으로. 최종 판단은 담당 수의사와 상담 안내.\n\n'+buildCtx(),
+        messages:hist})});
+    var d=await r.json();var ty2=document.getElementById('aiTy');if(ty2)ty2.remove();
+    appMsg('ai',d.content&&d.content[0]&&d.content[0].text?d.content[0].text:'응답을 받지 못했습니다');
+  }catch(e){var ty3=document.getElementById('aiTy');if(ty3)ty3.remove();appMsg('ai','오류: '+e.message)}
+  btn.disabled=false;btn.textContent='전송';
+}
+document.getElementById('btnCmpAI').addEventListener('click',async function(){
+  if(!apiKey){toast('AI 탭에서 API 키를 먼저 입력하세요',1);return}
+  var el=document.getElementById('cmpResult');
+  el.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
+        system:'소동물 신경학 전문 수의사 어시스턴트. 한국어로 답변.\n\n'+buildCtx(),
+        messages:[{role:'user',content:'1차 발병과 현재 재발을 비교 분석해주세요. 증상 중증도 차이, 치료 반응 예측, 보호자 주의사항 포함.'}]})});
+    var d=await r.json();
+    el.innerHTML=(d.content&&d.content[0]&&d.content[0].text?d.content[0].text:'결과 없음').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  }catch(e){el.innerHTML='오류: '+e.message}
+});
+
+// SCAN
+function rScan(){rScanHist()}
+document.getElementById('btnCam').addEventListener('click',function(){
+  var f=document.getElementById('scanFile');f.setAttribute('capture','environment');f.click();
+});
+document.getElementById('btnGal').addEventListener('click',function(){
+  var f=document.getElementById('scanFile');f.removeAttribute('capture');f.click();
+});
+document.getElementById('scanFile').addEventListener('change',function(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    scanData=ev.target.result;
+    document.getElementById('scanImg').src=scanData;
+    document.getElementById('scanInner').style.display='none';
+    document.getElementById('scanPrev').style.display='block';
+    document.getElementById('scanResult').style.display='none';
+    document.getElementById('scanLoading').style.display='none';
+  };
+  reader.readAsDataURL(file);e.target.value='';
+});
+document.getElementById('btnReScan').addEventListener('click',function(){
+  scanData=null;
+  document.getElementById('scanInner').style.display='block';
+  document.getElementById('scanPrev').style.display='none';
+  document.getElementById('scanResult').style.display='none';
+});
+document.getElementById('btnScanAgain').addEventListener('click',function(){
+  scanData=null;
+  document.getElementById('scanInner').style.display='block';
+  document.getElementById('scanPrev').style.display='none';
+  document.getElementById('scanResult').style.display='none';
+  document.getElementById('scanLoading').style.display='none';
+});
+document.getElementById('btnToggleRaw').addEventListener('click',function(){
+  var b=document.getElementById('rawBox');b.style.display=b.style.display==='none'?'block':'none';
+});
+document.getElementById('btnAnalyze').addEventListener('click',async function(){
+  if(!scanData){toast('사진을 먼저 선택해주세요',1);return}
+  if(!apiKey){toast('AI 탭에서 API 키를 먼저 입력하세요',1);goPage('ai');return}
+  document.getElementById('scanPrev').style.display='none';
+  document.getElementById('scanLoading').style.display='block';
+  document.getElementById('scanResult').style.display='none';
+  var b64=scanData.split(',')[1];
+  var mm=scanData.match(/data:([^;]+);/);
+  var mime=mm?mm[1]:'image/jpeg';
+  var sys='동물병원 진료 문서 분석 전문가. 이미지에서 정보를 추출해 반드시 아래 JSON 형식으로만 응답(다른 텍스트 없이):\n{"doc_type":"영수증|처방전|혈액검사|소견서|기타","date":"YYYY-MM-DD or null","hospital":"병원명 or null","raw_text":"전체 텍스트","items":[{"type":"med|test|visit","name":"항목명","detail":"세부내용","value":"수치(검사만)","unit":"단위","ref_range":"참조범위","status":"normal|high|low|null","note":"메모"}]}\ntype: med=처방약, test=검사수치, visit=병원방문요약. 반려견: 자가면역성 뇌척수염 재발, 항암+스테로이드 치료 중.';
+  try{
+    var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,system:sys,
+        messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mime,data:b64}},{type:'text',text:'이 동물병원 문서를 분석해서 JSON으로 추출해주세요.'}]}]})});
+    var data=await r.json();
+    document.getElementById('scanLoading').style.display='none';
+    var txt=data.content&&data.content[0]&&data.content[0].text?data.content[0].text:'';
+    var jm=txt.match(/\{[\s\S]*\}/);
+    if(!jm)throw new Error('JSON 파싱 실패 — 사진이 선명한지 확인해주세요');
+    var parsed=JSON.parse(jm[0]);
+    parsedList=parsed.items||[];parsedChk={};
+    parsedList.forEach(function(_,i){parsedChk[i]=true});
+    document.getElementById('scanResultHdr').textContent=(parsed.doc_type||'문서')+' 분석 결과'+(parsed.hospital?' — '+parsed.hospital:'')+(parsed.date?' ('+parsed.date+')':'');
+    renderParsed();
+    document.getElementById('rawBox').textContent=parsed.raw_text||txt;
+    document.getElementById('scanResult').style.display='block';
+    S.scanHist.unshift({id:Date.now(),date:parsed.date||td(),docType:parsed.doc_type,hosp:parsed.hospital,cnt:parsedList.length});
+    if(S.scanHist.length>20)S.scanHist=S.scanHist.slice(0,20);
+    sv();rScanHist();
+  }catch(err){
+    document.getElementById('scanLoading').style.display='none';
+    document.getElementById('scanPrev').style.display='block';
+    toast('분석 실패: '+err.message,1);
+  }
+});
+var TL={med:'💊 처방약',test:'🔬 검사결과',visit:'🏥 병원기록'};
+var TC={med:'pm',test:'pk',visit:'pv'};
+function renderParsed(){
+  var el=document.getElementById('parsedList');
+  if(!parsedList.length){el.innerHTML='<div style="font-size:13px;color:var(--tm);text-align:center;padding:12px">추출된 항목 없음</div>';return}
+  el.innerHTML='';
+  parsedList.forEach(function(item,i){
+    var on=parsedChk[i];
+    var div=document.createElement('div');div.className='parsed-item'+(on?' on':'');
+    div.innerHTML='<div class="pchk'+(on?' on':'')+'" data-ci="'+i+'">'+(on?'✓':'')+'</div>'
+      +'<div style="flex:1"><div class="pt '+(TC[item.type]||'')+'">'+( TL[item.type]||item.type)+'</div>'
+      +'<div class="pn-t">'+item.name+'</div>'
+      +'<div class="pd">'+[item.detail,item.value?(item.value+(item.unit?' '+item.unit:'')):null,item.ref_range?'참조: '+item.ref_range:null,item.note].filter(Boolean).join(' · ')+'</div></div>';
+    el.appendChild(div);
+  });
+}
+document.getElementById('parsedList').addEventListener('click',function(e){
+  var c=e.target.closest('[data-ci]');if(!c)return;
+  var i=parseInt(c.dataset.ci);parsedChk[i]=!parsedChk[i];renderParsed();
+});
+document.getElementById('btnRegAll').addEventListener('click',function(){
+  var cnt=0;
+  parsedList.forEach(function(item,i){
+    if(!parsedChk[i])return;cnt++;
+    if(item.type==='med'){
+      S.meds.push({id:Date.now()+i,name:item.name,type:'other',dose:item.detail||'',freq:item.note||'1일 1회',start:td(),status:'active',note:'[사진 자동 입력]'});
+    }else if(item.type==='test'){
+      S.tests.unshift({id:Date.now()+i,date:td(),type:'CBC',item:item.name,val:item.value||item.detail||'',unit:item.unit||'',ref:item.ref_range||'',status:item.status||'normal',note:'[사진 자동 입력]'+(item.note?' '+item.note:'')});
+    }else if(item.type==='visit'){
+      S.visits.unshift({id:Date.now()+i,date:td(),hosp:'',reason:item.name,detail:item.detail||'',rx:'',cost:'',next:''});
+    }
+  });
+  sv();rHome();rMed();rTest();rHosp();
+  toast('✅ '+cnt+'개 항목 등록 완료!');
+  scanData=null;parsedList=[];parsedChk={};
+  document.getElementById('scanInner').style.display='block';
+  document.getElementById('scanPrev').style.display='none';
+  document.getElementById('scanResult').style.display='none';
+});
+function rScanHist(){
+  var el=document.getElementById('scanHist');
+  if(!S.scanHist||!S.scanHist.length){el.innerHTML='<div style="font-size:13px;color:var(--tm)">스캔 기록 없음</div>';return}
+  el.innerHTML='';
+  S.scanHist.slice(0,5).forEach(function(h){
+    var div=document.createElement('div');div.className='scan-hist';
+    var ic=h.docType==='처방전'?'💊':h.docType==='혈액검사'?'🔬':h.docType==='영수증'?'🧾':'📋';
+    div.innerHTML='<div class="sh-ic">'+ic+'</div>'
+      +'<div><div style="font-size:13px;font-weight:600">'+(h.docType||'문서')+' — '+h.cnt+'개 항목</div>'
+      +'<div style="font-size:11px;color:var(--tm)">'+h.date+(h.hosp?' · '+h.hosp:'')+'</div></div>';
+    el.appendChild(div);
+  });
+}
+
+// SETTINGS
+document.getElementById('btnShowCode').addEventListener('click',function(){toast('현재 코드: '+getCode())});
+document.getElementById('btnChangeCode').addEventListener('click',function(){
+  ['codeCur','codeNew','codeNew2'].forEach(function(id){document.getElementById(id).value=''});
+  openM('moCode');
+});
+document.getElementById('btnCodeX').addEventListener('click',function(){closeM('moCode')});
+document.getElementById('btnCodeOK').addEventListener('click',function(){
+  var cur=document.getElementById('codeCur').value;
+  var nw=document.getElementById('codeNew').value;
+  var nw2=document.getElementById('codeNew2').value;
+  if(cur!==getCode()){toast('현재 코드가 맞지 않습니다',1);return}
+  if(nw.length<6){toast('새 코드는 6자리 이상이어야 합니다',1);return}
+  if(nw!==nw2){toast('새 코드가 일치하지 않습니다',1);return}
+  localStorage.setItem(ICODE_KEY,nw);closeM('moCode');toast('설치 코드가 변경되었습니다 🔐');
+});
+document.getElementById('btnExport').addEventListener('click',function(){
+  var json=JSON.stringify({version:'3.0',exported:new Date().toISOString(),data:S},null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='PawCare_backup_'+td()+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('데이터 내보내기 완료 📦');
+});
+document.getElementById('btnImport').addEventListener('click',function(){document.getElementById('importFile').click()});
+document.getElementById('importFile').addEventListener('change',function(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var parsed=JSON.parse(ev.target.result);
+      if(!parsed.data)throw new Error('올바른 백업 파일이 아닙니다');
+      Object.assign(S,parsed.data);sv();rHome();toast('데이터 가져오기 완료 ✅');
+    }catch(err){toast('가져오기 실패: '+err.message,1)}
+  };
+  reader.readAsText(file);e.target.value='';
+});
+document.getElementById('btnClearData').addEventListener('click',function(){
+  if(!window.confirm('모든 기록을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.'))return;
+  S={pet:{name:'',breed:'',age:'',weight:'',disease:'자가면역성 뇌척수염 (재발)',onset1:'',onset2:'',vet:''},
+    meds:[],neuro:[],tests:[],visits:[],p1:{},medLogs:[],aiHist:[],scanHist:[]};
+  sv();rHome();toast('데이터가 삭제되었습니다');
+});
+document.getElementById('btnResetDevice').addEventListener('click',function(){
+  if(!window.confirm('기기 등록을 초기화하시겠습니까?\n다음 실행 시 설치 코드를 다시 입력해야 합니다.'))return;
+  localStorage.removeItem(DEVICE_KEY);toast('기기 등록이 초기화되었습니다');
+});
+
+// GLOBAL DELEGATION
+document.addEventListener('click',function(e){
+  var db=e.target.closest('[data-tp][data-id]');
+  if(db){
+    var id=parseInt(db.dataset.id),tp=db.dataset.tp;
+    if(tp==='neuro'){S.neuro=S.neuro.filter(function(r){return r.id!==id});sv();rNeuro();rHome();updCrisis()}
+    else if(tp==='med'){S.meds=S.meds.filter(function(m){return m.id!==id});sv();rMed();rHome()}
+    else if(tp==='test'){S.tests=S.tests.filter(function(t){return t.id!==id});sv();rTest();rHome()}
+    else if(tp==='visit'){S.visits=S.visits.filter(function(v){return v.id!==id});sv();rHosp();rHome()}
+    toast('삭제되었습니다');return;
+  }
+  var em=e.target.closest('[data-edit-med]');
+  if(em){editMed(parseInt(em.dataset.editMed));return}
+  var mb=e.target.closest('[data-med][data-done]');
+  if(mb){logMed(parseInt(mb.dataset.med),mb.dataset.done==='1');return}
+});
+
+// INIT
+initLock();
+rHome();
+if(apiKey)document.getElementById('keyNotice').style.display='none';
+if(S.pet.onset1)document.getElementById('ph1').textContent=fmtD(S.pet.onset1);
+if(S.pet.onset2)document.getElementById('ph2').textContent=fmtD(S.pet.onset2);
+updCrisis();
+if(S.aiHist.length>1){var am=document.getElementById('aiMsgs');am.innerHTML='';S.aiHist.forEach(function(m){appMsg(m.role,m.content,false)})}
+
+})();
+
+</script>
+</body>
+</html>
